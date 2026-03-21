@@ -1,0 +1,78 @@
+@model IEnumerable<oop_s2_2_mvc_78853.Models.FollowUp>
+
+@{
+    ViewData["Title"] = "Follow Ups";
+}
+
+<h1>Follow Ups</h1>
+
+<div class="alert alert-info">
+    Total follow-ups found: @ViewBag.TotalCount
+</div>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Follow Up</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Premises</th>
+            <th>Inspection Date</th>
+            <th>Due Date</th>
+            <th>Status</th>
+            <th>Closed Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Inspection?.Premises?.Name</td>
+                <td>@item.Inspection?.InspectionDate.ToShortDateString()</td>
+                <td>@item.DueDate.ToShortDateString()</td>
+                <td>
+                    @if (item.Status == "Open")
+                    {
+                        if (item.DueDate < DateTime.Today)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">Open</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Closed</span>
+                    }
+                </td>
+                <td>
+                    @if (item.ClosedDate.HasValue)
+                    {
+                        @item.ClosedDate.Value.ToShortDateString()
+                    }
+                    else
+                    {
+                        <span>-</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                    
+                    @if (item.Status == "Open")
+                    {
+                        <form asp-action="Close" method="post" style="display: inline;">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit" class="btn btn-sm btn-success">Close</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

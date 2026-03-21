@@ -1,0 +1,36 @@
+@model oop_s2_2_mvc_78853.Models.Inspection
+
+@{
+    ViewData["Title"] = "Delete Inspection";
+}
+
+<h1>Delete Inspection</h1>
+
+<div class="alert alert-danger">
+    <h3>You want to delete this inspection?</h3>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Premises</dt>
+            <dd class="col-sm-9">@Model.Premises?.Name</dd>
+
+            <dt class="col-sm-3">Inspection Date</dt>
+            <dd class="col-sm-9">@Model.InspectionDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Score</dt>
+            <dd class="col-sm-9">@Model.Score / 100</dd>
+
+            <dt class="col-sm-3">Outcome</dt>
+            <dd class="col-sm-9">@Model.Outcome</dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="submit" value="Delete" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

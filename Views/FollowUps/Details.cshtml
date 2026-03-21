@@ -1,0 +1,57 @@
+@model oop_s2_2_mvc_78853.Models.FollowUp
+
+@{
+    ViewData["Title"] = "Follow Up Details";
+}
+
+<h1>Follow Up Details</h1>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Premises</dt>
+            <dd class="col-sm-9">@Model.Inspection?.Premises?.Name</dd>
+
+            <dt class="col-sm-3">Inspection Date</dt>
+            <dd class="col-sm-9">@Model.Inspection?.InspectionDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Due Date</dt>
+            <dd class="col-sm-9">@Model.DueDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">
+                @if (Model.Status == "Open")
+                {
+                    if (Model.DueDate < DateTime.Today)
+                    {
+                        <span class="badge bg-danger">Overdue</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning">Open</span>
+                    }
+                }
+                else
+                {
+                    <span class="badge bg-success">Closed</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Closed Date</dt>
+            <dd class="col-sm-9">
+                @if (Model.ClosedDate.HasValue)
+                {
+                    @Model.ClosedDate.Value.ToShortDateString()
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Index" class="btn btn-secondary">Back List</a>
+    </div>
+</div>

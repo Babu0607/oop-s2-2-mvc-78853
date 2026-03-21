@@ -1,0 +1,33 @@
+@model oop_s2_2_mvc_78853.Models.FollowUp
+
+@{
+    ViewData["Title"] = "Delete Follow Up";
+}
+
+<h1>Delete Follow Up</h1>
+
+<div class="alert alert-danger">
+    <h3>You want to delete this follow-up?</h3>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Premises</dt>
+            <dd class="col-sm-9">@Model.Inspection?.Premises?.Name</dd>
+
+            <dt class="col-sm-3">Due Date</dt>
+            <dd class="col-sm-9">@Model.DueDate.ToShortDateString()</dd>
+
+            <dt class="col-sm-3">Status</dt>
+            <dd class="col-sm-9">@Model.Status</dd>
+        </dl>
+    </div>
+    <div class="card-footer">
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="submit" value="Delete" class="btn btn-danger" />
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>

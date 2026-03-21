@@ -1,0 +1,129 @@
+@model dynamic
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Inspection Dashboard</h1>
+
+<!-- Filter Form -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5>Filter Dashboard</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row">
+            <div class="col-md-4">
+                <label for="town" class="form-label">Town</label>
+                <select name="town" id="town" class="form-control">
+                    <option value="All">All Towns</option>
+                    @foreach (var town in Model.Towns)
+                    {
+                        if (ViewBag.SelectedTown == town)
+                        {
+                            <option value="@town" selected="selected">@town</option>
+                        }
+                        else
+                        {
+                            <option value="@town">@town</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="riskRating" class="form-label">Risk Rating</label>
+                <select name="riskRating" id="riskRating" class="form-control">
+                    @foreach (var rating in Model.RiskRatings)
+                    {
+                        if (ViewBag.SelectedRiskRating == rating)
+                        {
+                            <option value="@rating" selected="selected">@rating</option>
+                        }
+                        else
+                        {
+                            <option value="@rating">@rating</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <div>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">Total Premises</h5>
+                <h2 class="card-text">@Model.TotalPremises</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">Inspections This Month</h5>
+                <h2 class="card-text">@Model.InspectionsThisMonth</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5 class="card-title">Failed Inspections</h5>
+                <h2 class="card-text">@Model.FailedInspectionsThisMonth</h2>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">Overdue Follow-ups</h5>
+                <h2 class="card-text">@Model.OverdueFollowUps</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Table -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5>Quick Summary</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+            <tr>
+                <td>Total Premises</td>
+                <td>@Model.TotalPremises</td>
+            </tr>
+            <tr>
+                <td>Inspections This Month</td>
+                <td>@Model.InspectionsThisMonth</td>
+            </tr>
+            <tr>
+                <td>Failed Inspections This Month</td>
+                <td>@Model.FailedInspectionsThisMonth</td>
+            </tr>
+            <tr>
+                <td>Overdue Follow-ups</td>
+                <td class="@(Model.OverdueFollowUps > 0 ? "text-danger fw-bold" : "")">
+                    @Model.OverdueFollowUps
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
