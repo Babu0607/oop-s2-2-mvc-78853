@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using oop_s2_2_mvc_78853.Models;
@@ -6,7 +7,8 @@ using Serilog;
 
 namespace oop_s2_2_mvc_78853.Controllers;
 
-public class PremisesController : Controller
+[Authorize(Roles = "Admin,Inspector,Viewer")]
+public class PremisesController: Controller
 {
     private readonly ApplicationDbContext _context;
 
@@ -34,6 +36,7 @@ public class PremisesController : Controller
         return View(premises);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public IActionResult Create()
     {
         return View();
@@ -41,6 +44,7 @@ public class PremisesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Create(Premises premises)
     {
         if (ModelState.IsValid)
@@ -55,6 +59,7 @@ public class PremisesController : Controller
         return View(premises);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -67,6 +72,7 @@ public class PremisesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int id, Premises premises)
     {
         if (id != premises.Id) return NotFound();
@@ -90,6 +96,7 @@ public class PremisesController : Controller
         return View(premises);
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -103,6 +110,7 @@ public class PremisesController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var premises = await _context.Premises.FindAsync(id);

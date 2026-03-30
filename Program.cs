@@ -22,10 +22,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-   
     builder.Host.UseSerilog();
 
-  
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                            throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
@@ -34,15 +32,28 @@ try
 
     builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-    
-    builder.Services.AddDefaultIdentity<IdentityUser>(options => 
+
+    builder.Services.AddIdentity<IdentityUser, IdentityRole>(options => 
         {
             options.SignIn.RequireConfirmedAccount = false;
         })
-        .AddRoles<IdentityRole>()
-        .AddEntityFrameworkStores<ApplicationDbContext>();
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultUI()         
+        .AddDefaultTokenProviders()
+        .AddRoles<IdentityRole>();
+    
+
+    builder.Services.ConfigureApplicationCookie(options =>
+    {
+        options.Cookie.HttpOnly = true;
+        options.LoginPath = "/Identity/Account/Login";
+        options.AccessDeniedPath = "/Home/AccessDenied";
+        options.SlidingExpiration = true;
+        options.Cookie.IsEssential = true; 
+    });
 
     builder.Services.AddControllersWithViews();
+    builder.Services.AddRazorPages(); 
 
     var app = builder.Build();
     
@@ -52,9 +63,7 @@ try
         await SeedData.Initialize(services);
     }
 
-
-    
-    if (app.Environment.IsDevelopment())
+    if (app. Environment.IsDevelopment())
     {
         app.UseMigrationsEndPoint();
     }

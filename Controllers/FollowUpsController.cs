@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,8 @@ using Serilog;
 
 namespace oop_s2_2_mvc_78853.Controllers;
 
-public class FollowUpsController : Controller
+[Authorize(Roles = "Admin,Inspector,Viewer")]
+public class FollowUpsController: Controller
 {
     private readonly ApplicationDbContext _context;
 
@@ -22,8 +24,6 @@ public class FollowUpsController : Controller
             .Include(f => f.Inspection)
             .ThenInclude(i => i.Premises)
             .ToListAsync();
-    
-        Console.WriteLine($"Found {followUps.Count} follow-ups");
     
         ViewBag.TotalCount = followUps.Count;
     
@@ -44,6 +44,7 @@ public class FollowUpsController : Controller
         return View(followUp);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Create()
     {
         ViewData["InspectionId"] = new SelectList(await _context.Inspections
@@ -54,6 +55,7 @@ public class FollowUpsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Create(FollowUp followUp)
     {
         var inspection = await _context.Inspections.FindAsync(followUp.InspectionId);
@@ -78,6 +80,7 @@ public class FollowUpsController : Controller
         return View(followUp);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -91,6 +94,7 @@ public class FollowUpsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int id, FollowUp followUp)
     {
         if (id != followUp.Id) return NotFound();
@@ -115,6 +119,7 @@ public class FollowUpsController : Controller
         return View(followUp);
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -130,6 +135,7 @@ public class FollowUpsController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var followUp = await _context.FollowUps.FindAsync(id);
@@ -145,6 +151,7 @@ public class FollowUpsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Close(int id)
     {
         var followUp = await _context.FollowUps.FindAsync(id);
@@ -164,6 +171,6 @@ public class FollowUpsController : Controller
 
     private bool FollowUpExists(int id)
     {
-        return _context.FollowUps.Any(e => e.Id == id);
+        return _context.FollowUps.Any(e => id == e.Id);
     }
 }

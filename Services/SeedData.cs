@@ -34,6 +34,22 @@ public static class SeedData
             await userManager.CreateAsync(adminUser, "Admin@123");
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
+        
+        string inspectorEmail = "inspector@foodinspection2.com";
+        if (await userManager.FindByEmailAsync(inspectorEmail) == null)
+        {
+            var user = new IdentityUser { UserName = inspectorEmail, Email = inspectorEmail, EmailConfirmed = true };
+            await userManager.CreateAsync(user, "Inspector@123");
+            await userManager.AddToRoleAsync(user, "Inspector");
+        }
+
+        string viewerEmail = "viewer@foodinspection2.com";
+        if (await userManager.FindByEmailAsync(viewerEmail) == null)
+        {
+            var user = new IdentityUser { UserName = viewerEmail, Email = viewerEmail, EmailConfirmed = true };
+            await userManager.CreateAsync(user, "Viewer@123");
+            await userManager.AddToRoleAsync(user, "Viewer");
+        }
 
         if (context.Premises.Any()) return;
 

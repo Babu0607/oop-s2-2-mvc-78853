@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -7,7 +8,8 @@ using Serilog;
 
 namespace oop_s2_2_mvc_78853.Controllers;
 
-public class InspectionsController : Controller
+[Authorize(Roles = "Admin,Inspector,Viewer")]
+public class InspectionsController: Controller
 {
     private readonly ApplicationDbContext _context;
 
@@ -39,6 +41,7 @@ public class InspectionsController : Controller
         return View(inspection);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Create()
     {
         ViewData["PremisesId"] = new SelectList(await _context.Premises.ToListAsync(), "Id", "Name");
@@ -47,6 +50,7 @@ public class InspectionsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Create(Inspection inspection)
     {
         if (ModelState.IsValid)
@@ -63,6 +67,7 @@ public class InspectionsController : Controller
         return View(inspection);
     }
 
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int? id)
     {
         if (id == null) return NotFound();
@@ -76,6 +81,7 @@ public class InspectionsController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Inspector")]
     public async Task<IActionResult> Edit(int id, Inspection inspection)
     {
         if (id != inspection.Id) return NotFound();
@@ -100,6 +106,7 @@ public class InspectionsController : Controller
         return View(inspection);
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int? id)
     {
         if (id == null) return NotFound();
@@ -114,6 +121,7 @@ public class InspectionsController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var inspection = await _context.Inspections.FindAsync(id);
