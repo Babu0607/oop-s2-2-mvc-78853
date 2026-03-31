@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using oop_s2_2_mvc_78853.Data;
 using oop_s2_2_mvc_78853.Services;
 using Serilog;
-using Serilog.Events;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()

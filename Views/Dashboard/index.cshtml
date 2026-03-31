@@ -1,8 +1,16 @@
-@model dynamic
+@model oop_s2_2_mvc_78853.Models.DashboardView
 
 @{
     ViewData["Title"] = "Safety Dashboard";
 }
+
+<style>
+    .card-hover:hover {
+        transform: translateY(-5px);
+        transition: 0.3s;
+        filter: brightness(1.1);
+    }
+</style>
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -13,23 +21,31 @@
     <div class="card shadow-sm mb-4 border-0 bg-light">
         <div class="card-body">
             <form method="get" class="row g-3">
-                <div class="col-md-5">
+                <div class="col-md-4">
                     <label class="form-label fw-bold">Town</label>
-                    <select name="town" class="form-select" onchange="this.form.submit()">
+                    <select name="town" class="form-select">
                         <option value="All">All Locations</option>
                         @foreach (var t in Model.Towns) {
                             <option value="@t" selected="@(ViewBag.SelectedTown == t)">@t</option>
                         }
                     </select>
                 </div>
-                <div class="col-md-5">
+
+                <div class="col-md-4">
                     <label class="form-label fw-bold">Risk Level</label>
-                    <select name="riskRating" class="form-select" onchange="this.form.submit()">
+                    <select name="riskRating" class="form-select">
                         @foreach (var r in Model.RiskRatings) {
                             <option value="@r" selected="@(ViewBag.SelectedRiskRating == r)">@r</option>
                         }
                     </select>
                 </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100 shadow-sm">
+                        <i class="bi bi-search me-1"></i> Apply Filter
+                    </button>
+                </div>
+
                 <div class="col-md-2 d-flex align-items-end">
                     <a asp-action="Index" class="btn btn-outline-secondary w-100">Clear All</a>
                 </div>
@@ -37,37 +53,95 @@
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 mb-5">
         <div class="col-md-3">
-            <div class="card text-white bg-dark h-100 shadow">
+            <div class="card text-white bg-dark h-100 shadow border-0 card-hover">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase opacity-75">Total Premises</h6>
+                    <h6 class="text-uppercase opacity-75 small">Total Premises</h6>
                     <p class="display-4 fw-bold mb-0">@Model.TotalPremises</p>
                 </div>
             </div>
         </div>
+
         <div class="col-md-3">
-            <div class="card text-white bg-primary h-100 shadow">
+            <div class="card text-white bg-primary h-100 shadow border-0 card-hover">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase opacity-75">Inspections (Month)</h6>
+                    <h6 class="text-uppercase opacity-75 small">Inspections (Month)</h6>
                     <p class="display-4 fw-bold mb-0">@Model.InspectionsThisMonth</p>
                 </div>
             </div>
         </div>
+
         <div class="col-md-3">
-            <div class="card text-white bg-danger h-100 shadow">
+            <a asp-controller="Inspections" asp-action="Index" asp-route-status="Fail" class="text-decoration-none h-100">
+                <div class="card text-white bg-danger h-100 shadow border-0 card-hover">
+                    <div class="card-body text-center">
+                        <h6 class="text-uppercase opacity-75 small">Failed Month</h6>
+                        <p class="display-4 fw-bold mb-0">@Model.FailedInspectionsThisMonth</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-dark bg-warning h-100 shadow border-0 card-hover">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase opacity-75">Failed (Month)</h6>
-                    <p class="display-4 fw-bold mb-0">@Model.FailedInspectionsThisMonth</p>
+                    <h6 class="text-uppercase opacity-75 small">Overdue Follow-ups</h6>
+                    <p class="display-4 fw-bold mb-0">@Model.OverdueFollowUps</p>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-dark bg-warning h-100 shadow">
-                <div class="card-body text-center">
-                    <h6 class="text-uppercase opacity-75">Overdue Follow-ups</h6>
-                    <p class="display-4 fw-bold mb-0">@Model.OverdueFollowUps</p>
-                </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3 border-0">
+            <h5 class="mb-0 fw-bold">
+                <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                Results for @(ViewBag.SelectedTown == "All" ? "All Locations" : ViewBag.SelectedTown)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Premises Name</th>
+                            <th>Town</th>
+                            <th>Risk Level</th>
+                            <th class="text-end pe-4">Manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.FilteredPremises.Any())
+                        {
+                            @foreach (var item in Model.FilteredPremises)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-bold">@item.Name</td>
+                                    <td>@item.Town</td>
+                                    <td>
+                                        <span class="badge @(item.RiskRating == "High" ? "bg-danger" : item.RiskRating == "Medium" ? "bg-warning text-dark" : "bg-success")">
+                                            @item.RiskRating
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <a asp-controller="Premises" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">
+                                            Details
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">
+                                    No premises found for the selected filters.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

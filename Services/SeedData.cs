@@ -22,41 +22,16 @@ public static class SeedData
             }
         }
 
-        string adminEmail = "admin@foodinspection2.com";
-        if (await userManager.FindByEmailAsync(adminEmail) == null)
-        {
-            var adminUser = new IdentityUser
-            {
-                UserName = adminEmail,
-                Email = adminEmail,
-                EmailConfirmed = true
-            };
-            await userManager.CreateAsync(adminUser, "Admin@123");
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-        }
-        
-        string inspectorEmail = "inspector@foodinspection2.com";
-        if (await userManager.FindByEmailAsync(inspectorEmail) == null)
-        {
-            var user = new IdentityUser { UserName = inspectorEmail, Email = inspectorEmail, EmailConfirmed = true };
-            await userManager.CreateAsync(user, "Inspector@123");
-            await userManager.AddToRoleAsync(user, "Inspector");
-        }
-
-        string viewerEmail = "viewer@foodinspection2.com";
-        if (await userManager.FindByEmailAsync(viewerEmail) == null)
-        {
-            var user = new IdentityUser { UserName = viewerEmail, Email = viewerEmail, EmailConfirmed = true };
-            await userManager.CreateAsync(user, "Viewer@123");
-            await userManager.AddToRoleAsync(user, "Viewer");
-        }
+        await CreateUser(userManager, "admin@foodinspection2.com", "Admin@123", "Admin");
+        await CreateUser(userManager, "inspector@foodinspection2.com", "Inspector@123", "Inspector");
+        await CreateUser(userManager, "viewer@foodinspection2.com", "Viewer@123", "Viewer");
 
         if (context.Premises.Any()) return;
 
         var premisesFaker = new Faker<Premises>()
             .RuleFor(p => p.Name, f => f.Company.CompanyName() + " Restaurant")
             .RuleFor(p => p.Address, f => f.Address.StreetAddress())
-            .RuleFor(p => p.Town, f => f.PickRandom("Dublin", "Cork", "Limerick", "Galway", "Tralee"))
+            .RuleFor(p => p.Town, f => f.PickRandom("Dublin", "Cork", "Galway")) 
             .RuleFor(p => p.RiskRating, f => f.PickRandom("Low", "Medium", "High"));
 
         var premises = premisesFaker.Generate(12);
@@ -64,45 +39,54 @@ public static class SeedData
         await context.SaveChangesAsync();
 
         var inspections = new List<Inspection>();
-        foreach (var premise in premises)
-        {
-            var inspectionFaker = new Faker<Inspection>()
-                .RuleFor(i => i.PremisesId, premise.Id)
-                .RuleFor(i => i.InspectionDate, f => f.Date.Past(180))
-                .RuleFor(i => i.Score, f => f.Random.Int(50, 100))
-                .RuleFor(i => i.Outcome, (f, i) => i.Score >= 70 ? "Pass" : "Fail")
-                .RuleFor(i => i.Notes, f => f.Lorem.Sentence());
+        var faker = new Faker();
 
-            var premiseInspections = inspectionFaker.Generate(new Random().Next(1, 4));
-            inspections.AddRange(premiseInspections);
+        for (int i = 0; i < 25; i++)
+        {
+            var p = faker.PickRandom(premises);
+            var score = faker.Random.Int(40, 100);
+            
+            inspections.Add(new Inspection
+            {
+                PremisesId = p.Id,
+                Score = score,
+                Outcome = score >= 70 ? "Pass" : "Fail",
+                Notes = faker.Lorem.Sentence(),
+                InspectionDate = i < 10 ? DateTime.Now.AddDays(-faker.Random.Int(1, 25)) 
+                                        : faker.Date.Past(1)
+            });
         }
-        
-        var selectedInspections = inspections.Take(25).ToList();
-        await context.Inspections.AddRangeAsync(selectedInspections);
+        await context.Inspections.AddRangeAsync(inspections);
         await context.SaveChangesAsync();
 
         var followUps = new List<FollowUp>();
         for (int i = 0; i < 10; i++)
         {
-            var faker = new Faker();
-            var inspection = faker.PickRandom(selectedInspections);
+            var inspection = faker.PickRandom(inspections);
+            var status = faker.PickRandom("Open", "Closed");
             
-            var followUp = new FollowUp
+            var dueDate = i < 4 ? DateTime.Now.AddDays(-10) : DateTime.Now.AddDays(14);
+
+            followUps.Add(new FollowUp
             {
                 InspectionId = inspection.Id,
-                DueDate = faker.Date.Future(30),
-                Status = faker.PickRandom("Open", "Closed")
-            };
-            
-            if (followUp.Status == "Closed")
-            {
-                followUp.ClosedDate = faker.Date.Recent(10);
-            }
-            
-            followUps.Add(followUp);
+                DueDate = dueDate,
+                Status = status,
+                ClosedDate = status == "Closed" ? DateTime.Now.AddDays(-2) : null
+            });
         }
         
         await context.FollowUps.AddRangeAsync(followUps);
         await context.SaveChangesAsync();
+    }
+
+    private static async Task CreateUser(UserManager<IdentityUser> userManager, string email, string password, string role)
+    {
+        if (await userManager.FindByEmailAsync(email) == null)
+        {
+            var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+            await userManager.CreateAsync(user, password);
+            await userManager.AddToRoleAsync(user, role);
+        }
     }
 }

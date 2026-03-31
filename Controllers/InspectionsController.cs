@@ -18,13 +18,15 @@ public class InspectionsController: Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string status)
     {
-        var inspections = await _context.Inspections
-            .Include(i => i.Premises)
-            .Include(i => i.FollowUps)
-            .ToListAsync();
-        return View(inspections);
+        var inspections =  _context.Inspections.Include(i => i.Premises).AsQueryable();
+        if (!string.IsNullOrEmpty(status))
+        {
+            inspections = inspections.Where(i => i.Outcome == status);
+        }
+
+        return View(await inspections.ToListAsync());
     }
 
     public async Task<IActionResult> Details(int? id)

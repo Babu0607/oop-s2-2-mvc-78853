@@ -1,50 +1,68 @@
 @model IEnumerable<oop_s2_2_mvc_78853.Models.Inspection>
 
 @{
-    ViewData["Title"] = "Inspections";
+    ViewData["Title"] = "Food Inspections";
 }
 
-<h1>Food Inspections</h1>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Food Inspections</h1>
+        @if (User.IsInRole("Admin") || User.IsInRole("Inspector"))
+        {
+            <a asp-action="Create" class="btn btn-primary">Create New Inspection</a>
+        }
+    </div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New Inspection</a>
-</p>
+    <table class="table table-hover shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Premises</th>
+                <th>Date</th>
+                <th>Score</th>
+                <th>Outcome</th>
+                <th>Follow-ups</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="fw-bold">@item.Premises?.Name</td>
+                <td>@item.InspectionDate.ToShortDateString()</td>
+                <td>@item.Score</td>
+                <td>
+                    @if (item.Outcome == "Pass")
+                    {
+                        <span class="badge bg-success">Pass</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Fail</span>
+                    }
+                </td>
+                <td>@(item.FollowUps?.Count ?? 0)</td>
+                <td class="text-end">
+                    <div class="btn-group">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">Details</a>
+                        
+                        @if (User.IsInRole("Admin") || User.IsInRole("Inspector"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                        }
 
-<table class="table">
-    <thead>
-    <tr>
-        <th>Premises</th>
-        <th>Date</th>
-        <th>Score</th>
-        <th>Outcome</th>
-        <th>Follow-ups</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach (var item in Model)
-    {
-        <tr>
-            <td>@item.Premises?.Name</td>
-            <td>@item.InspectionDate.ToShortDateString()</td>
-            <td>@item.Score</td>
-            <td>
-                @if (item.Outcome == "Pass")
-                {
-                    <span class="badge bg-success">Pass</span>
-                }
-                else
-                {
-                    <span class="badge bg-danger">Fail</span>
-                }
-            </td>
-            <td>@(item.FollowUps?.Count ?? 0)</td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
-                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    
+    <div class="mt-3">
+        <a asp-controller="Dashboard" asp-action="Index" class="btn btn-link">← Back to Dashboard</a>
+    </div>
+</div>

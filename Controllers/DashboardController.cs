@@ -2,12 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using oop_s2_2_mvc_78853.Data;
+using oop_s2_2_mvc_78853.Models;
 using Serilog;
 
 namespace oop_s2_2_mvc_78853.Controllers;
 
 [Authorize(Roles = "Admin,Inspector,Viewer")]
-public class DashboardController: Controller
+public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
 
@@ -18,12 +19,11 @@ public class DashboardController: Controller
 
     public async Task<IActionResult> Index(string town, string riskRating)
     {
-        var premisesQuery = _context.Premises.AsQueryable();
-        var inspectionsQuery = _context.Inspections.Include(i => i.Premises).AsQueryable();
+        var premisesQuery = _context.Premises.AsQueryable(); 
+        var inspectionsQuery = _context.Inspections.Include(i => i.Premises).AsQueryable(); 
         var followUpsQuery = _context.FollowUps.Include(f => f.Inspection).ThenInclude(i => i.Premises).AsQueryable();
 
-        // 1. Apply Filtering Logic
-        if (!string.IsNullOrEmpty(town) && town != "All")
+        if (!string.IsNullOrEmpty(town) && town != "All") 
         {
             premisesQuery = premisesQuery.Where(p => p.Town == town);
             inspectionsQuery = inspectionsQuery.Where(i => i.Premises.Town == town);
@@ -37,23 +37,24 @@ public class DashboardController: Controller
             followUpsQuery = followUpsQuery.Where(f => f.Inspection.Premises.RiskRating == riskRating);
         }
 
-        // 2. Prepare Statistics
-        var now = DateTime.Now;
+        var now = DateTime.Now; 
         var startOfMonth = new DateTime(now.Year, now.Month, 1);
 
-        var dashboardData = new
+        var viewModel = new DashboardView  
         {
             TotalPremises = await premisesQuery.CountAsync(),
             InspectionsThisMonth = await inspectionsQuery.CountAsync(i => i.InspectionDate >= startOfMonth),
             FailedInspectionsThisMonth = await inspectionsQuery.CountAsync(i => i.InspectionDate >= startOfMonth && i.Outcome == "Fail"),
             OverdueFollowUps = await followUpsQuery.CountAsync(f => f.Status == "Open" && f.DueDate < DateTime.Today),
+            
             Towns = await _context.Premises.Select(p => p.Town).Distinct().OrderBy(t => t).ToListAsync(),
-            RiskRatings = new[] { "All", "Low", "Medium", "High" }
+
+            FilteredPremises = await premisesQuery.ToListAsync()
         };
 
         ViewBag.SelectedTown = town ?? "All";
         ViewBag.SelectedRiskRating = riskRating ?? "All";
 
-        return View(dashboardData);
+        return View(viewModel);
     }
 }
